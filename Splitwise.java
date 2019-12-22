@@ -1,3 +1,18 @@
+class IllegalSplitException extends Exception{
+
+}
+
+class Utils{
+	public static double roundOff(double value){
+		return ((long)(value * 100)) / 100.0d;
+	}
+
+	public static boolean isApproxEqual(double v1, double v2){
+		return Math.abs(v1 - v2) / (Math.min(v1, v2)) < 1e-10;
+	}
+}
+
+
 class User{
 	private String name, email, phoneNumber, address, hashPass;
 	private long uid;
@@ -12,7 +27,6 @@ class User{
 	}
 
 	// getters and setters
-
 	public void setName(String name){
 		this.name = name;
 	}
@@ -61,7 +75,6 @@ abstract class Expense{
 	private static long NEW_UID = 0;
 
 	// Builder Pattern
-
 	private Expense(Builder ob){
 		this.uid = NEW_UID++;
 		this.name = ob.name;
@@ -82,7 +95,7 @@ abstract class Expense{
 		private List<Images> images;
 		private double totalAmount;
 		private User paidBy, createdBy;
-		private List<Split> splits;
+		private List<Split> splits;     // runtime polymorphism
 
 		public Builder(String name, double totalAmount, User createdBy){
 			this.name = name;
@@ -91,7 +104,6 @@ abstract class Expense{
 		}
 
 		// setters
-
 		public Builder setName(String name){
 			this.name = name;
 		}
@@ -134,7 +146,6 @@ abstract class Expense{
 	}
 
 	// getters
-
 	public String getName(){
 		return name;
 	}
@@ -170,10 +181,103 @@ abstract class Expense{
 	public List<Split> getSplits(){
 		return splits;
 	}
+
+	// validate amount
+	boolean validate(){
+		double sum = 0;
+		for(Split s : splits)
+			sum += s.amount;
+
+		return sum == totalAmount;
+	}
+
+	// recalculation
+	abstract void recalculate(){
+
+	}
+
+	// set splits
+	public void setSplits(List<Split> splits){
+		this.splits = splits;
+		recalculate();
+	}
+
+
+	// add split
+	public void addSplits(Split s){
+		splits.add(s);
+		recalculate();
+	}
+
+	// remove split
+	public void removeSplit(Split s){
+		splits.remove(s);
+		recalculate();
+	}
 }
 
 class EqualExpense extends Expense{
-	
+	public EqualExpense(String name, double totalAmount, User createdBy){
+		super(name, totalAmount, createdBy);
+	}
+
+	@Override
+	public void recalculate(){
+		int numUsers = splits.size();
+		double sum = 0;
+		double amount;
+		for(Splits s : splits){
+			amount = Utils.roundOff(totalAmount / numUsers);
+			s.setAmount(amount);
+			sum += s.getAmount();
+		}
+
+		if(sum != totalAmount){
+			splits.get(0).setAmount(splits.get(0).getAmount() + totalAmount - sum);
+		}
+	}
+
+	@Override
+	public boolean validate(){
+		super.validate();
+		// add extra logic here
+	}
+}
+
+class PercentExpense extends Expense{
+	@Override
+	public void recalculate(){
+		int numUsers = splits.size();
+		double sum = 0;
+		double amount;
+		for(Splits s : splits){
+			if(!(s instanceof PercentSplit)){
+				throw new IllegalSplitException("PercentExpense must have PercentSplits only");
+			}
+			PercentSplit ps = (PercentSplit) s;
+			amount = Utils.roundOff(totalAmount * getPercent() / numUsers);
+			s.setAmount(amount);
+			sum += s.getAmount();
+		}
+
+		if(sum != totalAmount){
+			splits.get(0).setAmount(splits.get(0).getAmount() + totalAmount - sum);
+		}
+	}
+
+	@Override
+	public boolean validate(){
+		super.validate();
+		// add extra logic here
+	}
+}
+
+class PartsExpense extends Expense{
+
+}
+
+class ExactAmountExpense extends Expense{
+
 }
 
 
@@ -187,8 +291,8 @@ class EqualSplit extends Split{
 
 }
 
-class PercentageSplit extends Split{
-
+class PercentSplit extends Split{
+	double percent;
 }
 
 class PartsSplit extends Split{
