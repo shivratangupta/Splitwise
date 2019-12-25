@@ -8,6 +8,7 @@ import com.splitwise.models.User;
 import com.splitwise.models.expenses.Expense;
 import com.splitwise.models.expenses.ExpenseFactory;
 import com.splitwise.models.expenses.ExpenseType;
+import com.splitwise.models.splits.Split;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ public class BookKeeper {
     private Map<Long, Expense> expenses;
     private Map<Long, User> users;
     private Map<String, User> userByEmail;
+    private Map<User, Double> balances;
 
     private static BookKeeper INSTANCE;
 
@@ -25,6 +27,7 @@ public class BookKeeper {
         expenses = new HashMap<Long, Expense>();
         users = new HashMap<Long, User>();
         userByEmail = new HashMap<String, User>();
+        balances = new HashMap<User, Double>();
     }
 
     // singleton pattern
@@ -47,6 +50,44 @@ public class BookKeeper {
         Expense e = ExpenseFactory.createExpense(type, name, createdBy.getUid(), totalAmount);
         expenses.put(e.getUid(), e);
         createdBy.getExpenseIDs().add(e.getUid());
+    }
+
+    // show all balances of all users
+    public void showAllBalances() throws NoSuchUserException {
+//        Map<User, Double> balances = new HashMap<>();
+//        for(Expense e : expenses.values()) {
+//            for(Split s : e.getSplits()) {
+//                User u = getUser(s.getUserId());
+//                double amount = s.getAmount();
+//                double prevAmount = balances.get(u);
+//                balances.put(u, prevAmount + amount);
+//            }
+//        }
+        for(Map.Entry<User, Double> userAmount : balances.entrySet()) {
+            System.out.println("User "
+                    + userAmount.getKey().getName()
+                    + " ows total amount of "
+                    + userAmount.getValue());
+        }
+    }
+
+    public void showBalance(User user) {
+
+    }
+
+    public void showBalance(Long userId) throws NoSuchUserException {
+        showBalance(getUser(userId));
+    }
+
+    public List<Expense> getUserExpenses(User user) {
+        List<Expense> userExpenses = new ArrayList<>();
+        for(long expenseId : user.getExpenseIDs())
+            userExpenses.add(expenses.get(expenseId));
+        return userExpenses;
+    }
+
+    public List<Expense> getUserExpenses(Long userId) throws NoSuchUserException {
+        return getUserExpenses(getUser(userId));
     }
 
     public User getUser(Long uid) throws NoSuchUserException {

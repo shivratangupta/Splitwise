@@ -4,15 +4,15 @@ import com.splitwise.models.User;
 
 public abstract class Split {
     private long uid;
-    private User user;
+    private long userId;
     private double amount;
     private String notes;
 
     private static long NEW_UID = 0;
 
-    public Split(User user) {
+    public Split(long userId) {
         setUid(NEW_UID++);
-        setUser(user);
+        setUserId(userId);
     }
 
     public long getUid() {
@@ -23,12 +23,12 @@ public abstract class Split {
         this.uid = uid;
     }
 
-    public User getUser(){
-        return user;
+    public long getUserId(){
+        return userId;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUserId(long userId) {
+        this.userId = userId;
     }
 
     public double getAmount() {
