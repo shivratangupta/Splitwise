@@ -1,5 +1,9 @@
 package com.splitwise.models;
 
+import com.splitwise.models.expenses.Expense;
+
+import java.util.List;
+
 public class User {
     private String name;
     private String email;
@@ -9,6 +13,7 @@ public class User {
     private long uid; // unique ID not user ID
 
     private static long NEW_UID = 0;
+    private List<Long> expenseIDs;
 
     public User(String name, String email, String hashedPass){
         this.setUid(NEW_UID++);
@@ -54,7 +59,7 @@ public class User {
         this.hashedPass = hashedPass;
     }
 
-    public String getHashePass(){
+    public String getHashedPass(){
         return hashedPass;
     }
 
@@ -64,6 +69,14 @@ public class User {
 
     public long getUid(){
         return uid;
+    }
+
+    public void setExpenseIDs(List<Long> expenseIDs) {
+        this.expenseIDs = expenseIDs;
+    }
+
+    public List<Long> getExpenseIDs() {
+        return expenseIDs;
     }
 
     @Override

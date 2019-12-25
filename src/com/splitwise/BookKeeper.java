@@ -1,9 +1,13 @@
 package com.splitwise;
 
 import com.splitwise.exceptions.EmailAlreadyUsedException;
+import com.splitwise.exceptions.IllegalSplitException;
+import com.splitwise.exceptions.InvalidExpenseTypeException;
 import com.splitwise.exceptions.NoSuchUserException;
 import com.splitwise.models.User;
 import com.splitwise.models.expenses.Expense;
+import com.splitwise.models.expenses.ExpenseFactory;
+import com.splitwise.models.expenses.ExpenseType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,6 +38,15 @@ public class BookKeeper {
         users.put(user.getUid(), user);
         if(user.getEmail() != null || user.getEmail() != "")
             userByEmail.put(user.getEmail(), user);
+    }
+
+    public void addExpense(String name,
+                           ExpenseType type,
+                           User createdBy,
+                           double totalAmount) throws IllegalSplitException, InvalidExpenseTypeException {
+        Expense e = ExpenseFactory.createExpense(type, name, createdBy.getUid(), totalAmount);
+        expenses.put(e.getUid(), e);
+        createdBy.getExpenseIDs().add(e.getUid());
     }
 
     public User getUser(Long uid) throws NoSuchUserException {

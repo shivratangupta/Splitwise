@@ -9,8 +9,8 @@ import com.splitwise.models.splits.Split;
 import java.util.List;
 
 public class PercentExpense extends Expense {
-    public PercentExpense(String name, double totalAmount, User createdBy) throws IllegalSplitException {
-        super(name, totalAmount, createdBy);
+    public PercentExpense(String name, double totalAmount, long createdById) throws IllegalSplitException {
+        super(name, totalAmount, createdById);
     }
 
     @Override
