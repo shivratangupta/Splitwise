@@ -65,4 +65,11 @@ public class User {
     public long getUid(){
         return uid;
     }
+
+    @Override
+    public boolean equals(Object ob) {
+        if(!(ob instanceof User))
+            return false;
+        return getUid() == ((User) ob).getUid();
+    }
 }
