@@ -5,8 +5,8 @@ import com.splitwise.models.User;
 public class PercentSplit extends Split {
     private double percent;
 
-    public PercentSplit(User user, double percent) {
-        super(user);
+    public PercentSplit(long userId, double percent) {
+        super(userId);
         setPercent(percent);
     }
 
