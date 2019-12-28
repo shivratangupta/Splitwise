@@ -13,7 +13,7 @@ public class User {
     private long uid; // unique ID not user ID
 
     private static long NEW_UID = 0;
-    private List<Long> expenseIDs;
+    private List<Expense> expenses;
 
     public User(String name, String email, String hashedPass){
         this.setUid(NEW_UID++);
@@ -71,12 +71,12 @@ public class User {
         return uid;
     }
 
-    public void setExpenseIDs(List<Long> expenseIDs) {
-        this.expenseIDs = expenseIDs;
+    public void setExpenses(List<Expense> expenses) {
+        this.expenses = expenses;
     }
 
-    public List<Long> getExpenseIDs() {
-        return expenseIDs;
+    public List<Expense> getExpenses() {
+        return expenses;
     }
 
     @Override

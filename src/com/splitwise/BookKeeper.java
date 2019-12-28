@@ -19,15 +19,15 @@ public class BookKeeper {
     private Map<Long, Expense> expenses;
     private Map<Long, User> users;
     private Map<String, User> userByEmail;
-    private Map<User, Double> balances;
+    private Map<User, Map<User, Double>> balances;
 
     private static BookKeeper INSTANCE;
 
     private BookKeeper() {
-        expenses = new HashMap<Long, Expense>();
-        users = new HashMap<Long, User>();
-        userByEmail = new HashMap<String, User>();
-        balances = new HashMap<User, Double>();
+        expenses = new HashMap<>();
+        users = new HashMap<>();
+        userByEmail = new HashMap<>();
+        balances = new HashMap<>();
     }
 
     // singleton pattern
@@ -41,38 +41,67 @@ public class BookKeeper {
         users.put(user.getUid(), user);
         if(user.getEmail() != null || user.getEmail() != "")
             userByEmail.put(user.getEmail(), user);
+        balances.put(user, new HashMap<>());
     }
 
     public void addExpense(String name,
                            ExpenseType type,
                            User createdBy,
-                           double totalAmount) throws IllegalSplitException, InvalidExpenseTypeException {
-        Expense e = ExpenseFactory.createExpense(type, name, createdBy.getUid(), totalAmount);
+                           User paidBy,
+                           List<Split> splits,
+                           double totalAmount) throws IllegalSplitException, InvalidExpenseTypeException, NoSuchUserException {
+        Expense e = ExpenseFactory.createExpense(type, name, createdBy, totalAmount);
         expenses.put(e.getUid(), e);
-        createdBy.getExpenseIDs().add(e.getUid());
+        createdBy.getExpenses().add(e);
+        e.setPaidBy(paidBy);
+        e.setSplits(splits);
+
+        if(!balances.containsKey(paidBy))
+            throw new NoSuchUserException("Please add the user before adding their expenses");
+
+        for(Split s : splits) {
+            User paidTo = s.getUser();
+            if(paidBy.equals(paidTo))
+                continue;
+
+            Map<User, Double> userBalances = balances.get(paidBy);
+            if(!userBalances.containsKey(paidTo))
+                userBalances.put(paidTo, 0.0d);
+            userBalances.put(paidTo, s.getAmount() + userBalances.get(paidTo));
+
+            if(!balances.containsKey(paidTo))
+                throw new NoSuchUserException("Please add the user before adding their expenses");
+            userBalances = balances.get(paidTo);
+            if(!userBalances.containsKey(paidBy))
+                userBalances.put(paidBy, 0.0d);
+            userBalances.put(paidBy, s.getAmount() + userBalances.get(paidBy));
+        }
     }
 
     // show all balances of all users
     public void showAllBalances() throws NoSuchUserException {
-//        Map<User, Double> balances = new HashMap<>();
-//        for(Expense e : expenses.values()) {
-//            for(Split s : e.getSplits()) {
-//                User u = getUser(s.getUserId());
-//                double amount = s.getAmount();
-//                double prevAmount = balances.get(u);
-//                balances.put(u, prevAmount + amount);
-//            }
-//        }
-        for(Map.Entry<User, Double> userAmount : balances.entrySet()) {
-            System.out.println("User "
-                    + userAmount.getKey().getName()
-                    + " ows total amount of "
-                    + userAmount.getValue());
+        for(User user1 : balances.keySet()) {
+            showBalance(user1);
+        }
+    }
+
+    public void showAllBalances(boolean simplify) throws NoSuchUserException {
+        // todo : implement this
+        for(User user1 : balances.keySet()) {
+            showBalance(user1);
         }
     }
 
     public void showBalance(User user) {
-
+        Map<User, Double> userBalances = balances.get(user);
+        for(User user1 : userBalances.keySet()) {
+            double amount = userBalances.get(user1);
+            // print user1 owes amount to user2
+            if(amount > 0)
+                System.out.println(user.getName() + " owes " + amount + " to " + user1.getName());
+            else if(amount < 0)
+                System.out.println(user.getName() + " takes " + (-amount) + " from " + user1.getName());
+        }
     }
 
     public void showBalance(Long userId) throws NoSuchUserException {
@@ -80,10 +109,7 @@ public class BookKeeper {
     }
 
     public List<Expense> getUserExpenses(User user) {
-        List<Expense> userExpenses = new ArrayList<>();
-        for(long expenseId : user.getExpenseIDs())
-            userExpenses.add(expenses.get(expenseId));
-        return userExpenses;
+        return user.getExpenses();
     }
 
     public List<Expense> getUserExpenses(Long userId) throws NoSuchUserException {

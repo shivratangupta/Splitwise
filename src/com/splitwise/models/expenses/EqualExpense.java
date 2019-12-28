@@ -9,9 +9,9 @@ import com.splitwise.models.splits.Split;
 import java.util.List;
 
 public class EqualExpense extends Expense {
-    public EqualExpense(String name, double totalAmount, long createdById) throws IllegalSplitException {
+    public EqualExpense(String name, double totalAmount, User createdBy) throws IllegalSplitException {
         // calling super constructor
-        super(name, totalAmount, createdById);
+        super(name, totalAmount, createdBy);
     }
 
     @Override

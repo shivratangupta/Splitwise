@@ -14,8 +14,8 @@ public abstract class Expense {
     private long uid;  // not user id. unique id
     private String name;
     private double totalAmount;
-    private long paidBy;
-    private long createdById;
+    private User paidBy;
+    private User createdBy;
     private ExpenseType type;
     private List<Split> splits;
 
@@ -26,11 +26,11 @@ public abstract class Expense {
 
     private static long NEW_UID = 0;
 
-    public Expense(String name, double totalAmount, long createdById) throws IllegalSplitException {
+    public Expense(String name, double totalAmount, User createdBy) throws IllegalSplitException {
         setUid(NEW_UID++);
         setName(name);
         setTotalAmount(totalAmount);
-        setCreatedById(createdById);
+        setCreatedBy(createdBy);
     }
 
     // setters
@@ -58,12 +58,12 @@ public abstract class Expense {
         this.images = images;
     }
 
-    public void setPaidBy(long paidBy){
+    public void setPaidBy(User paidBy){
         this.paidBy = paidBy;
     }
 
-    public void setCreatedById(long createdById){
-        this.createdById = createdById;
+    public void setCreatedBy(User createdBy){
+        this.createdBy = createdBy;
     }
 
     // getters
@@ -95,12 +95,12 @@ public abstract class Expense {
         return totalAmount;
     }
 
-    public long getPaidBy(){
+    public User getPaidBy(){
         return paidBy;
     }
 
-    public long getCreatedById(){
-        return createdById;
+    public User getCreatedById(){
+        return createdBy;
     }
 
     public List<Split> getSplits(){
