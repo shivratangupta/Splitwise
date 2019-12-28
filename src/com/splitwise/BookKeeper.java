@@ -10,6 +10,7 @@ import com.splitwise.models.expenses.ExpenseFactory;
 import com.splitwise.models.expenses.ExpenseType;
 import com.splitwise.models.splits.Split;
 
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +43,7 @@ public class BookKeeper {
         if(user.getEmail() != null || user.getEmail() != "")
             userByEmail.put(user.getEmail(), user);
         balances.put(user, new HashMap<>());
+        System.out.println(user.toString() + " added successfully!");
     }
 
     public void addExpense(String name,
@@ -59,33 +61,32 @@ public class BookKeeper {
         if(!balances.containsKey(paidBy))
             throw new NoSuchUserException("Please add the user before adding their expenses");
 
+        Map<User, Double> userBalances;
         for(Split s : splits) {
             User paidTo = s.getUser();
             if(paidBy.equals(paidTo))
                 continue;
 
-            Map<User, Double> userBalances = balances.get(paidBy);
-            if(!userBalances.containsKey(paidTo))
-                userBalances.put(paidTo, 0.0d);
-            userBalances.put(paidTo, s.getAmount() + userBalances.get(paidTo));
+            userBalances = balances.get(paidBy);
+            userBalances.put(paidTo, s.getAmount() + userBalances.getOrDefault(paidTo, 0.0d));
+            balances.put(paidBy, userBalances);
 
             if(!balances.containsKey(paidTo))
                 throw new NoSuchUserException("Please add the user before adding their expenses");
             userBalances = balances.get(paidTo);
-            if(!userBalances.containsKey(paidBy))
-                userBalances.put(paidBy, 0.0d);
-            userBalances.put(paidBy, s.getAmount() + userBalances.get(paidBy));
+            userBalances.put(paidBy, s.getAmount() + userBalances.getOrDefault(paidBy, 0.0d));
+            balances.put(paidTo, userBalances);
         }
     }
 
     // show all balances of all users
-    public void showAllBalances() throws NoSuchUserException {
+    public void showAllBalances() {
         for(User user1 : balances.keySet()) {
             showBalance(user1);
         }
     }
 
-    public void showAllBalances(boolean simplify) throws NoSuchUserException {
+    public void showAllBalances(boolean simplify) {
         // todo : implement this
         for(User user1 : balances.keySet()) {
             showBalance(user1);
@@ -94,13 +95,21 @@ public class BookKeeper {
 
     public void showBalance(User user) {
         Map<User, Double> userBalances = balances.get(user);
+        boolean hadBalance = false;
         for(User user1 : userBalances.keySet()) {
             double amount = userBalances.get(user1);
             // print user1 owes amount to user2
-            if(amount > 0)
+            if(amount > 0) {
                 System.out.println(user.getName() + " owes " + amount + " to " + user1.getName());
-            else if(amount < 0)
+                hadBalance = true;
+            }
+            else if(amount < 0) {
                 System.out.println(user.getName() + " takes " + (-amount) + " from " + user1.getName());
+                hadBalance = true;
+            }
+        }
+        if(!hadBalance) {
+            System.out.println(user.getName() + " has no dues!");
         }
     }
 
@@ -118,13 +127,13 @@ public class BookKeeper {
 
     public User getUser(Long uid) throws NoSuchUserException {
         if(!users.containsKey(uid))
-            throw new NoSuchUserException("User with uid=" + uid + " doesn't exist");
+            throw new NoSuchUserException("User with uid=" + uid + " doesn't exist!");
         return users.get(uid);
     }
 
     public User getUser(String email) throws NoSuchUserException {
         if(!userByEmail.containsKey(email))
-            throw new NoSuchUserException("User with email=" + email + "doesn't exist");
+            throw new NoSuchUserException("User with email=" + email + " doesn't exist!");
         return userByEmail.get(email);
     }
 

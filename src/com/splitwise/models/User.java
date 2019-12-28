@@ -85,4 +85,9 @@ public class User {
             return false;
         return getUid() == ((User) ob).getUid();
     }
+
+    @Override
+    public String toString() {
+        return "User(uid=" + getUid() + ", name=" + getName() + ", email=" + getEmail() + ")";
+    }
 }
