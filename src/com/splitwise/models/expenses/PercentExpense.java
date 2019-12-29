@@ -9,6 +9,8 @@ import com.splitwise.models.splits.Split;
 import java.util.List;
 
 public class PercentExpense extends Expense {
+    private static ExpenseType type = ExpenseType.PERCENT;
+
     public PercentExpense(String name, double totalAmount, User createdBy) throws IllegalSplitException {
         super(name, totalAmount, createdBy);
     }

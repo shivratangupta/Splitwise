@@ -1,12 +1,14 @@
 package com.splitwise.models.splits;
 
 import com.splitwise.models.User;
+import com.splitwise.models.expenses.ExpenseType;
 
 public abstract class Split {
     private long uid;
     private User user;
     private double amount;
     private String notes;
+    private static ExpenseType type = null;
 
     private static long NEW_UID = 0;
 

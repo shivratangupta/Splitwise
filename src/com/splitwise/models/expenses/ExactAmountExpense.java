@@ -9,6 +9,8 @@ import com.splitwise.models.splits.Split;
 import java.util.List;
 
 public class ExactAmountExpense extends Expense {
+    private static ExpenseType type = ExpenseType.EXACT;
+
     public ExactAmountExpense(String name, double totalAmount, User createdBy) throws IllegalSplitException {
         super(name, totalAmount, createdBy);
     }

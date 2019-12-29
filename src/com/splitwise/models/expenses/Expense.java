@@ -16,7 +16,7 @@ public abstract class Expense {
     private double totalAmount;
     private User paidBy;
     private User createdBy;
-    private ExpenseType type;
+    private static ExpenseType type = null;
     private List<Split> splits;
 
     private String notes;

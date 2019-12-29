@@ -9,6 +9,8 @@ import com.splitwise.models.splits.Split;
 import java.util.List;
 
 public class EqualExpense extends Expense {
+    private static ExpenseType type = ExpenseType.EQUAL;
+
     public EqualExpense(String name, double totalAmount, User createdBy) throws IllegalSplitException {
         // calling super constructor
         super(name, totalAmount, createdBy);

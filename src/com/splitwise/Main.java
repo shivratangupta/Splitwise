@@ -1,14 +1,32 @@
 package com.splitwise;
 
+import com.splitwise.exceptions.IllegalSplitException;
 import com.splitwise.exceptions.InvalidExpenseTypeException;
 import com.splitwise.exceptions.NoSuchUserException;
 import com.splitwise.models.User;
 import com.splitwise.models.expenses.Expense;
+import com.splitwise.models.expenses.ExpenseFactory;
 import com.splitwise.models.expenses.ExpenseType;
+import com.splitwise.models.splits.Split;
+import com.splitwise.models.splits.SplitFactory;
 
 import java.util.Scanner;
 
 public class Main {
+    public static User getUser(String userIdentification) throws NoSuchUserException {
+        BookKeeper bk = BookKeeper.getInstance();
+        User user;
+        try {
+            Long userId = Long.parseLong(userIdentification);
+            user = bk.getUser(userId);
+        } catch (NumberFormatException e) {
+            String userEmail = userIdentification.trim();
+            user = bk.getUser(userEmail);
+        }
+
+        return user;
+    }
+
     public static void main(String[] args) {
         BookKeeper bk = BookKeeper.getInstance();
 
@@ -26,19 +44,52 @@ public class Main {
                     bk.addUser(new User(cmd[1], cmd[2], cmd[3]));
                     break;
                 case "add_expense":
+                    ExpenseType expType;
                     try {
-                        ExpenseType expType = ExpenseType.fromString(cmd[1]);
+                        expType = ExpenseType.fromString(cmd[1]);
                     } catch (InvalidExpenseTypeException e) {
                         System.out.println(e.getMessage());
                         continue;
                     }
                     String name = cmd[2];
-                    Double amount = Double.parseDouble(cmd[3]);
+                    Double totalAmount = Double.parseDouble(cmd[3]);
+                    User createdBy;
+                    try {
+                        createdBy = getUser(cmd[4]);
+                    } catch (NoSuchUserException e) {
+                        System.out.println(e.getMessage());
+                        continue;
+                    }
+                    Expense expense;
+                    try {
+                        expense = ExpenseFactory.createExpense(expType, name, createdBy, totalAmount);
+                    } catch (InvalidExpenseTypeException | IllegalSplitException ignore) {
+                        continue;
+                    }
 
+                    if(cmd.length > 5) {
+                        User paidBy;
+                        try {
+                            paidBy = getUser(cmd[5]);
+                        } catch (NoSuchUserException e) {
+                            System.out.println(e.getMessage());
+                            continue;
+                        }
+                        expense.setPaidBy(paidBy);
 
-                    // created by
-                    // paid by
+                        int numberOfSplits = cmd.length - 5;
+                        if(numberOfSplits % 2 != 0) {
+                            System.out.println("Invalid format!\nExpected: > " +
+                                    "add_expense expense_type name createdBy [paidBy] [user val user val user val]");
+                        }
+
+                    }
+
                     // splits
+                    break;
+                case "add_split":
+                    // expense
+                    // split details
                     break;
                 case "modify_expense":
                     // expense id
@@ -48,13 +99,7 @@ public class Main {
                         // show for user
                         User user;
                         try {
-                            try {
-                                Long userId = Long.parseLong(cmd[1]);
-                                user = bk.getUser(userId);
-                            } catch (NumberFormatException e) {
-                                String userEmail = cmd[1].trim();
-                                user = bk.getUser(userEmail);
-                            }
+                            user = getUser(cmd[1]);
                             bk.showBalance(user);
                         } catch (NoSuchUserException e) {
                             System.out.println(e.getMessage());
@@ -73,7 +118,7 @@ public class Main {
 
 // -------------input format------------------
 // add_user name email passwordhash
-// add_expense expense_type --
+// add_expense expense_type name createdBy [paidBy] [user val user val]
 // show show all balances
 // show userID
 
