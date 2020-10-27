@@ -36,9 +36,9 @@
 
 ### Input Format
 - add_user name email passwordhash
-- add_expense expense_type name createdBy
-- add_expense expense_type name createdBy [paidBy] [user val user val]
+- add_expense expenseType expenseName totalAmount createdBy
+- add_expense expenseType expenseName totalAmount createdBy [paidBy] [user val user val]
 - add_split expenseId userId
-- add_split expenseId userId amount_or_percent 
-- show show all balances
+- add_split expenseId userId amountOrPercent 
+- show show_all_balances
 - show userID
